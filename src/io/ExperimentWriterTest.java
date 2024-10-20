@@ -10,11 +10,12 @@ public class ExperimentWriterTest {
 		double throughtput = 1000.95;
 		int listSize = 100;
 		int updateRatio = 10;
+		int numberOfThreads = 10;
 		
 		ExperimentWriter writer = new ExperimentWriter(name);
 		
 		
-		writer.add(listSize, updateRatio, throughtput);
+		writer.add(numberOfThreads, listSize, updateRatio, throughtput);
 	}
 
 }

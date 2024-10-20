@@ -34,7 +34,6 @@ do
      # ranging the refresh rate
     for u in ${updates[@]}
     do
-
         # ranging the number of threads
         for t in ${threads[@]}
         do
