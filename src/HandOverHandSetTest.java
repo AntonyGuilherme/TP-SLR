@@ -2,6 +2,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+
 import org.junit.Test;
 
 public class HandOverHandSetTest {
@@ -44,28 +47,75 @@ public class HandOverHandSetTest {
 		assertEquals(set.size(), 10);
 	}
 	
+	@Test
+	public void shouldNotContains() {
+		HandOverHandSet set = new HandOverHandSet();
+		set.addInt(10);
+		CyclicBarrier berrier = new CyclicBarrier(2);
+		
+		Runnable run = new SetInserter(set, berrier);
+		Runnable remover = new SetRemover(set, berrier);
+		
+		new Thread(remover).start();
+		new Thread(run).start();
+	}
+	
 	class SetInserter implements Runnable {
 
 		private HandOverHandSet set;
-		private int sleep;
 		public int correctOperations = 0;
+		private CyclicBarrier barrier;
 		
-		public SetInserter(HandOverHandSet set, int sleep) {
-			this.sleep = sleep;
+		public SetInserter(HandOverHandSet set, CyclicBarrier barrier) {
 			this.set = set;
+			this.barrier = barrier;
 		}
 		
 		@Override
 		public void run() {
 			try {
-				Thread.sleep(sleep);
+				System.out.println("Contains ready");
+				this.barrier.await();
+				//System.out.println("Contains");
+				boolean val = this.set.containsInt(10);
+				System.out.println("Contains ends");
+				assertTrue(val);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (BrokenBarrierException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			for (int i = 0; i < 150; i++) {
-				if(set.addInt(i))
-					this.correctOperations++;
+		}	
+	}
+	
+	
+	class SetRemover implements Runnable {
+
+		private HandOverHandSet set;
+		public int correctOperations = 0;
+		private CyclicBarrier barrier;
+		
+		public SetRemover(HandOverHandSet set, CyclicBarrier barrier) {
+			this.set = set;
+			this.barrier = barrier;
+		}
+		
+		@Override
+		public void run() {
+			try {
+				System.out.println("Remover ready");
+				this.barrier.await();
+				//System.out.println("Remove");
+				this.set.removeInt(10);
+				System.out.println("Remove ends");
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (BrokenBarrierException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}	
 	}

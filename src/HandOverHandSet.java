@@ -1,4 +1,5 @@
-public class HandOverHandSet {
+public class HandOverHandSet extends AbstractCompositionalIntSet {
+	
 	private Node head;
 	private Node tail;
 
@@ -7,33 +8,46 @@ public class HandOverHandSet {
 		tail = new Node(Integer.MAX_VALUE);
 		head.next = tail;
 	}
-
+	
+	@Override
 	public boolean addInt(int item) {
 		head.lock();
-
+		
 		Node pred = head;
 		Node curr = pred.next;
 
 		try {
+			
 			curr.lock();
+			
 			try {
+				// searching until the current element is the successor of 
+				// the new element
+				// locking a node at time
 				while (curr.value < item) {
 					pred.unlock();
 					pred = curr;
 					curr = pred.next;
 					curr.lock();
 				}
-
+				
+				// if the elements was just insert
+				// it should not be inserted again
 				if (curr.value == item)
 					return false;
-
+				
+				// setting the node between the predecessor and current
+				// [predecessor] -> [new element] -> [current]
 				Node node = new Node(item);
 				node.next = curr;
 				pred.next = node;
 
 				return true;
-
+				
+			// making sure that all elements will be unlock
+			// even if an error occurs
 			} finally {
+
 				curr.unlock();
 			}
 		} finally {
@@ -41,7 +55,8 @@ public class HandOverHandSet {
 			pred.unlock();
 		}
 	}
-
+	
+	@Override
 	public boolean removeInt(int item) {
 		head.lock();
 		Node pred = head;
@@ -54,6 +69,7 @@ public class HandOverHandSet {
 					pred.unlock();
 					pred = curr;
 					curr = pred.next;
+					
 					curr.lock();
 				}
 
@@ -70,9 +86,10 @@ public class HandOverHandSet {
 			pred.unlock();
 		}
 	}
-
+	
+	@Override
 	public boolean containsInt(int item) {
-		head.lock();
+		//head.lock();
 		Node pred = head;
 		Node curr = pred.next;
 
@@ -80,26 +97,28 @@ public class HandOverHandSet {
 			curr.lock();
 			try {
 				while (curr.value < item) {
-					pred.unlock();
+					//pred.unlock();
 					pred = curr;
 					curr = pred.next;
-					curr.lock();
+					//curr.lock();
 				}
 
 				return curr.value == item;
 			} finally {
-				curr.unlock();
+				//curr.unlock();
 			}
 		} finally {
-			pred.unlock();
+			//pred.unlock();
 		}
 	}
-
+	
+	@Override
 	public void clear() {
 		head = new Node(Integer.MIN_VALUE);
 		head.next = new Node(Integer.MAX_VALUE);
 	}
-
+	
+	@Override
 	public int size() {
 		int count = 0;
 
